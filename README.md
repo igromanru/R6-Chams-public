@@ -10,8 +10,8 @@ Use it at your own risk!
 - Detour hook
 - Thread creation
   
-<span style="font-size:0.8em;">That said, my code doesn't do anything what would be more risky than other public sources. If you have a way to use other public Chams without getting banned, my chams are as safe as them.  
-However, I still recommend to make your own project and to avoid as many detection vectors as possible</span>
+<sub>That said, my code doesn't do anything what would be more risky than other public sources. If you have a way to use other public Chams without getting banned, my chams are as safe as them.  
+However, I still recommend to make your own project and to avoid as many detection vectors as possible</sub>
 
 ## Demo
 ![visible](/pictures/visible.jpg)
