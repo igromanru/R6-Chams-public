@@ -67,9 +67,29 @@ namespace Models
             auto result = (Stride < 0 || stride == static_cast<unsigned>(Stride)) && (VscWidth < 0 || vscWidth == static_cast<unsigned>(VscWidth)) && (PscWidth < 0 || pscWidth == static_cast<unsigned>(PscWidth));
             if (result)
             {
-                if (SRVs && SrvIndex >= 0 && SrvFormat >= 0)
+                if (SRVs && (SrvIndex >= 0 || SrvFormat >= 0))
                 {
-                    result = SrvIndex < D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT && MatchSRVFormat(SRVs[SrvIndex], SrvFormat);
+                    if (SrvIndex < 0)
+                    {
+                        result = false;
+                        for (auto i = 0; i < D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT; i++)
+                        {
+                            if (!SRVs[i])
+                            {
+                                break;
+                            }
+
+                            if (MatchSRVFormat(SRVs[i], SrvFormat))
+                            {
+                                result = true;
+                                break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        result = SrvIndex < D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT && MatchSRVFormat(SRVs[SrvIndex], SrvFormat);
+                    }
                 }
             }
 
@@ -77,9 +97,9 @@ namespace Models
         }
     };
 
-    inline Model Skin(8, 62, 4);
-    inline Model Body1(8, 62, 12);
-    inline Model Body2(8, 62, 14);
+    inline Model Skin(8, 62, 4, 83);
+    inline Model Body1(8, 62, 12, 83);
+    inline Model Body2(8, 62, 14, 83);
 
     inline Model DroneWorldOverlay(8, 49, 3);
     inline Model WorldOverlay1(8, 49, 4);
