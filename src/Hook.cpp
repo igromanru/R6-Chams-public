@@ -51,13 +51,13 @@ namespace Hook
         auto mhStatus = MH_Initialize();
         if (mhStatus == MH_OK)
         {
-            if (const auto moduleHandle = GetModuleHandleW(L"d3d11.dll"))
+            if (const auto moduleHandle = reinterpret_cast<uintptr_t>(GetModuleHandleW(L"d3d11.dll")))
             {
     #ifdef _DEBUG
                 printf("d3d11.dll module handle: %p\n", reinterpret_cast<void*>(moduleHandle));
     #endif
                 // ToDo add FindPattern here, if needed
-                DrawIndexedInstancedIndirectAddress = reinterpret_cast<LPVOID>(reinterpret_cast<uintptr_t>(moduleHandle) + 0x154300);
+                DrawIndexedInstancedIndirectAddress = reinterpret_cast<LPVOID>(moduleHandle + 0x154300);
 
                 if (DrawIndexedInstancedIndirectAddress)
                 {
@@ -232,15 +232,11 @@ namespace Hook
         UINT Stride;
         UINT veBufferOffset;
         pContext->IAGetVertexBuffers(0, 1, &veBuffer, &Stride, &veBufferOffset);
-        if (veBuffer)
-        {
-            SafeRelease(veBuffer);
-        }
+        SafeRelease(veBuffer);
 
         ID3D11Buffer* pscBuffer = nullptr;
         D3D11_BUFFER_DESC pscDesc;
         UINT pscWidth = 0;
-
         pContext->PSGetConstantBuffers(0, 1, &pscBuffer);
         if (pscBuffer)
         {
@@ -252,7 +248,6 @@ namespace Hook
         ID3D11Buffer* vscBuffer = nullptr;
         D3D11_BUFFER_DESC vscDesc;
         UINT vscWidth = 0;
-
         pContext->VSGetConstantBuffers(0, 1, &vscBuffer);
         if (vscBuffer)
         {
@@ -278,6 +273,7 @@ namespace Hook
             pContext->OMGetDepthStencilState(&originalDSS, &originalStencilRef);
 
             const auto dontDrawAgain = DrawChams(pContext, pBufferForArgs, AlignedByteOffsetForArgs, originalSRVs, redSRV, greenSRV, originalDSS);
+
             pContext->OMSetDepthStencilState(originalDSS, originalStencilRef);
             SafeRelease(originalDSS);
 
