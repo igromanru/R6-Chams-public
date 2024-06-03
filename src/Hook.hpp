@@ -3,7 +3,6 @@
 #include <d3d11.h>
 #include "RGBA.hpp"
 
-
 typedef void(__stdcall* D3D11DrawIndexedInstancedIndirect) (ID3D11DeviceContext* pContext, ID3D11Buffer* pBufferForArgs, UINT AlignedByteOffsetForArgs);
 
 namespace Hook
