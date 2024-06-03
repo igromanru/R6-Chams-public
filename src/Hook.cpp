@@ -173,43 +173,60 @@ namespace Hook
         }
     }
 
-    void CreateDepthStencilStates(ID3D11Device* device, ID3D11DepthStencilState* originalDSS)
+    void CreateDepthStencilStates(ID3D11Device* device)
     {
-        if (device && !wallHackDSS && originalDSS)
+        if (device && !wallHackDSS)
         {
-            D3D11_DEPTH_STENCIL_DESC desc;
-            ZeroMemory(&desc, sizeof(desc));
-            originalDSS->GetDesc(&desc);
-            desc.DepthEnable = FALSE;
-            desc.StencilEnable = FALSE;
-            device->CreateDepthStencilState(&desc, &wallHackDSS);
+            D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
+            depthStencilDesc.DepthEnable = FALSE;
+            depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+            depthStencilDesc.DepthFunc = D3D11_COMPARISON_GREATER_EQUAL;
+            depthStencilDesc.StencilEnable = FALSE;
+            depthStencilDesc.StencilReadMask = D3D11_DEFAULT_STENCIL_READ_MASK;
+            depthStencilDesc.StencilWriteMask = D3D11_DEFAULT_STENCIL_WRITE_MASK;
+            // Stencil operations if pixel is front-facing
+            depthStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+            depthStencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
+            depthStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+            depthStencilDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+            // Stencil operations if pixel is back-facing
+            depthStencilDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+            depthStencilDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
+            depthStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+            depthStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+            device->CreateDepthStencilState(&depthStencilDesc, &wallHackDSS);
         }
     }
 
-    bool DrawChams(ID3D11DeviceContext* pContext, ID3D11Buffer* pBufferForArgs, UINT AlignedByteOffsetForArgs, ID3D11ShaderResourceView* SRVs[], ID3D11ShaderResourceView* srvWhenInvisible, ID3D11ShaderResourceView* srvWhenVisible, ID3D11DepthStencilState* visibleDSS)
+    bool DrawChams(ID3D11DeviceContext* pContext, ID3D11Buffer* pBufferForArgs, UINT AlignedByteOffsetForArgs, ID3D11ShaderResourceView* SRVs[], ID3D11ShaderResourceView* srvWhenInvisible, ID3D11ShaderResourceView* srvWhenVisible)
     {
         if (pContext && pBufferForArgs && SRVs)
         {
             const auto srvCount = CountSRVs(SRVs);
             if (srvWhenInvisible)
             {
+                ID3D11DepthStencilState* originalDSS = nullptr;
+                UINT originalStencilRef = 0;
+                pContext->OMGetDepthStencilState(&originalDSS, &originalStencilRef);
+
                 for (auto i = 0; i < srvCount; i++)
                 {
                     pContext->PSSetShaderResources(i, 1, &srvWhenInvisible);
                 }
-                pContext->OMSetDepthStencilState(wallHackDSS, 0);
+                pContext->OMSetDepthStencilState(wallHackDSS, originalStencilRef);
                 OriginalDrawIndexedInstancedIndirect(pContext, pBufferForArgs, AlignedByteOffsetForArgs);
+                
+                pContext->OMSetDepthStencilState(originalDSS, originalStencilRef);
+                SafeRelease(originalDSS);
             }
 
-            if (srvWhenVisible && visibleDSS)
+            if (srvWhenVisible)
             {
                 for (auto i = 0; i < srvCount; i++)
                 {
                     pContext->PSSetShaderResources(i, 1, &srvWhenVisible);
                 }
-                pContext->OMSetDepthStencilState(visibleDSS, 0);
                 OriginalDrawIndexedInstancedIndirect(pContext, pBufferForArgs, AlignedByteOffsetForArgs);
-
                 return true;
             }
         }
@@ -227,6 +244,7 @@ namespace Hook
         }
 
         CreateColorSRVs(device);
+        CreateDepthStencilStates(device);
 
         ID3D11Buffer* veBuffer = nullptr;
         UINT Stride;
@@ -268,16 +286,7 @@ namespace Hook
             || Models::Skin.IsModel(Stride, compVscWidth, compPscWidth, originalSRVs)
             )
         {
-            ID3D11DepthStencilState* originalDSS = nullptr;
-            UINT originalStencilRef = 0;
-            pContext->OMGetDepthStencilState(&originalDSS, &originalStencilRef);
-
-            const auto dontDrawAgain = DrawChams(pContext, pBufferForArgs, AlignedByteOffsetForArgs, originalSRVs, redSRV, greenSRV, originalDSS);
-
-            pContext->OMSetDepthStencilState(originalDSS, originalStencilRef);
-            SafeRelease(originalDSS);
-
-            if (dontDrawAgain)
+            if (DrawChams(pContext, pBufferForArgs, AlignedByteOffsetForArgs, originalSRVs, redSRV, greenSRV))
             {
                 SafeReleaseSRVs(originalSRVs);
                 return;

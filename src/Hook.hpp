@@ -22,10 +22,10 @@ namespace Hook
     void CreateColorSRV(ID3D11Device* device, const RGBA& color, ID3D11ShaderResourceView** shaderResourceView);
     void CreateColorSRVs(ID3D11Device* device);
 
-    void CreateDepthStencilStates(ID3D11Device* device, ID3D11DepthStencilState* originalDSS);
+    void CreateDepthStencilStates(ID3D11Device* device);
 
     bool DrawChams(ID3D11DeviceContext* pContext, ID3D11Buffer* pBufferForArgs, UINT AlignedByteOffsetForArgs, ID3D11ShaderResourceView* SRVs[],
-        ID3D11ShaderResourceView* srvWhenInvisible, ID3D11ShaderResourceView* srvWhenVisible, ID3D11DepthStencilState* visibleDSS);
+        ID3D11ShaderResourceView* srvWhenInvisible, ID3D11ShaderResourceView* srvWhenVisible);
 
     void __stdcall DetourDrawIndexedInstancedIndirect(ID3D11DeviceContext* pContext, ID3D11Buffer* pBufferForArgs, UINT AlignedByteOffsetForArgs);
 }
