@@ -71,5 +71,8 @@
     <ClInclude Include="src\RGBA.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FindPattern\FindPattern.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

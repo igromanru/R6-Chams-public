@@ -170,6 +170,7 @@
     <ClCompile Include="src\Hook.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="FindPattern\FindPattern.h" />
     <ClInclude Include="minhook\include\MinHook.h" />
     <ClInclude Include="minhook\src\buffer.h" />
     <ClInclude Include="minhook\src\hde\hde32.h" />
