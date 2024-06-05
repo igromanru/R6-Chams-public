@@ -89,7 +89,7 @@ namespace Hook
                 {
 #ifdef _DEBUG
                     printf("Error: Failed to get module information\n");
-                    return false;
+                    return FALSE;
 #endif
                 }
                 const auto searchStart = reinterpret_cast<uintptr_t>(moduleHandle) + 0x100000;
