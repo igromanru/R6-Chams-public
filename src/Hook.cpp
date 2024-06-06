@@ -91,7 +91,7 @@ namespace Hook
         // }
         // DEBUG_PRINT("Game module handle: %p\n", reinterpret_cast<void*>(gameHandle));
 
-        const auto moduleHandle = GetModuleHandleW(L"d3d11.dll");
+        const auto moduleHandle = reinterpret_cast<uintptr_t>(GetModuleHandleW(L"d3d11.dll"));
         if (!moduleHandle)
         {
             DEBUG_PRINT("Error: Failed to get d3d11.dll module handle. LastError: %lu\n", GetLastError());
@@ -108,9 +108,9 @@ namespace Hook
         // }
         // DEBUG_PRINT("d3d11.dll module size: %lu\n", info.SizeOfImage);
 
-        const auto searchStart = reinterpret_cast<uintptr_t>(moduleHandle) + 0x100000;
-        // const auto searchLength = static_cast<size_t>(info.SizeOfImage - 0x10000);
-        constexpr auto searchLength = static_cast<size_t>(0x200000);
+        const auto searchStart = moduleHandle + 0x100000;
+        // const auto searchLength = static_cast<size_t>(moduleHandle + info.SizeOfImage - searchStart - 0x1000);
+        const auto searchLength = moduleHandle + 0x200000 - searchStart;
         auto functionAddress = reinterpret_cast<LPVOID>(IgroWidgets::FindPattern(searchStart, searchLength,
             reinterpret_cast<const uint8_t*>("\x48\x89\x5C\x24\x08\x48\x89\x74\x24\x10\x57\x48\x83\xEC\x00\x41\x8B\xF0\x48\x8B\xDA\x48\x8D\xB9\x00\x00\x00\xFF\x48\x8B\xCF\xE8\x00\x00\x00\x00\x84\xC0\x74\x00\x48\x85\xDB\x74\x00\x8B\x8B\x00\x00\x00\x00\x8B\x93"),
             "xxxxxxxxxxxxxx?xxxxxxxxx???xxxxx????xxx?xxxx?xx????xx"));
