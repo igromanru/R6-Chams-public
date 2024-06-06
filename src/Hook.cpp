@@ -92,6 +92,10 @@ namespace Hook
                     return FALSE;
 #endif
                 }
+#ifdef _DEBUG
+                printf("Debug: d3d11.dll module size: %lu\n", info.SizeOfImage);
+#endif
+
                 const auto searchStart = reinterpret_cast<uintptr_t>(moduleHandle) + 0x100000;
                 const auto searchLength = static_cast<size_t>(info.SizeOfImage - 0x1000);
                 auto functionAddress = reinterpret_cast<LPVOID>(IgroWidgets::FindPattern(searchStart, searchLength,
