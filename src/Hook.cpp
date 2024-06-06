@@ -93,7 +93,7 @@ namespace Hook
 #endif
                 }
 #ifdef _DEBUG
-                printf("Debug: d3d11.dll module size: %lu\n", info.SizeOfImage);
+                printf("d3d11.dll module size: %lu\n", info.SizeOfImage);
 #endif
 
                 const auto searchStart = reinterpret_cast<uintptr_t>(moduleHandle) + 0x100000;
