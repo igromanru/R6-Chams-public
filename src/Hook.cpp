@@ -29,6 +29,9 @@
 
 #ifdef _DEBUG
     #include <cstdio>
+    #define DEBUG_PRINT(format, ...) printf(format, __VA_ARGS__)
+#else
+    #define DEBUG_PRINT(format, ...) (void)0
 #endif
 
 #include "minhook/include/MinHook.h"
@@ -73,96 +76,76 @@ namespace Hook
 
     DWORD WINAPI Init()
     {
-        auto result = FALSE;
-
         auto mhStatus = MH_Initialize();
-        if (mhStatus == MH_OK)
+        if (mhStatus != MH_OK)
         {
-            if (const auto moduleHandle = GetModuleHandleW(L"d3d11.dll"))
-            {
-    #ifdef _DEBUG
-                printf("d3d11.dll module handle: %p\n", reinterpret_cast<void*>(moduleHandle));
-    #endif
-                MODULEINFO info;
-                ZeroMemory(&info, sizeof(info));
-                if (!GetModuleInformation(GetCurrentProcess(), moduleHandle, &info, sizeof(MODULEINFO)))
-                {
-#ifdef _DEBUG
-                    printf("Error: Failed to get module information\n");
-                    return FALSE;
-#endif
-                }
-#ifdef _DEBUG
-                printf("d3d11.dll module size: %lu\n", info.SizeOfImage);
-#endif
-
-                const auto searchStart = reinterpret_cast<uintptr_t>(moduleHandle) + 0x100000;
-                const auto searchLength = static_cast<size_t>(info.SizeOfImage - 0x1000);
-                auto functionAddress = reinterpret_cast<LPVOID>(IgroWidgets::FindPattern(searchStart, searchLength,
-                    reinterpret_cast<const uint8_t*>("\x48\x89\x5C\x24\x08\x48\x89\x74\x24\x10\x57\x48\x83\xEC\x00\x41\x8B\xF0\x48\x8B\xDA\x48\x8D\xB9\x00\x00\x00\xFF\x48\x8B\xCF\xE8\x00\x00\x00\x00\x84\xC0\x74\x00\x48\x85\xDB\x74\x00\x8B\x8B\x00\x00\x00\x00\x8B\x93"),
-                "xxxxxxxxxxxxxx?xxxxxxxxx???xxxxx????xxx?xxxx?xx????xx"));
-                if (!functionAddress)
-                {
-#ifdef _DEBUG
-                    printf("Info: Couldn't find DrawIndexedInstancedIndirect with Windows 11 pattern, trying with Windows 10...\n");
-#endif
-                    functionAddress = reinterpret_cast<LPVOID>(IgroWidgets::FindPattern(searchStart, searchLength,
-                        reinterpret_cast<const uint8_t*>("\x48\x83\xEC\x00\x4C\x8B\xD1\x48\x85\xD2\x74\x00\x8B\x82"),
-                        "xxx?xxxxxxx?xx"));
-                }
-                DrawIndexedInstancedIndirectAddress = functionAddress;
-                if (DrawIndexedInstancedIndirectAddress)
-                {
-#ifdef _DEBUG
-                    printf("Found DrawIndexedInstancedIndirect function at: %p\n", DrawIndexedInstancedIndirectAddress);
-#endif
-                    mhStatus = MH_CreateHook(DrawIndexedInstancedIndirectAddress, DetourDrawIndexedInstancedIndirect, reinterpret_cast<LPVOID*>(&OriginalDrawIndexedInstancedIndirect));
-                    if (mhStatus == MH_OK)
-                    {
-                        mhStatus = MH_EnableHook(DrawIndexedInstancedIndirectAddress);
-                        result = mhStatus == MH_OK;
-                        if (mhStatus == MH_OK)
-                        {
-#ifdef _DEBUG
-                            printf("DrawIndexedInstancedIndirect hook enabled\n");
-#endif
-                        }
-                        else
-                        {
-#ifdef _DEBUG
-                            printf("Error: Failed MH_EnableHook for DrawIndexedInstancedIndirect! Status: %d\n", mhStatus);
-#endif
-                        }
-                    }
-                    else
-                    {
-#ifdef _DEBUG
-                        printf("Error: Failed MH_CreateHook for DrawIndexedInstancedIndirect! Status: %d\n", mhStatus);
-#endif
-                    }
-                }
-                else
-                {
-#ifdef _DEBUG
-                    printf("Error: Couldn't find DrawIndexedInstancedIndirect function!\n");
-#endif
-                }
-            }
-            else
-            {
-#ifdef _DEBUG
-                printf("Error: Failed to get d3d11.dll module handle!\n");
-#endif
-            }
-        }
-        else
-        {
-#ifdef _DEBUG
-            printf("Error: Failed to initialize MinHook! Status: %d\n", mhStatus);
-#endif                    
+            DEBUG_PRINT("Error: Failed to initialize MinHook! Status: %d\n", mhStatus);
+            return false;
         }
 
-        return result;
+        // const auto gameHandle = GetCurrentProcess();
+        // if (!gameHandle)
+        // {
+        //     DEBUG_PRINT("Error: Failed to get game module handle. LastError: %lu\n", GetLastError());
+        //     return false;
+        // }
+        // DEBUG_PRINT("Game module handle: %p\n", reinterpret_cast<void*>(gameHandle));
+
+        const auto moduleHandle = GetModuleHandleW(L"d3d11.dll");
+        if (!moduleHandle)
+        {
+            DEBUG_PRINT("Error: Failed to get d3d11.dll module handle. LastError: %lu\n", GetLastError());
+            return false;
+        }
+        DEBUG_PRINT("d3d11.dll module handle: %p\n", reinterpret_cast<void*>(moduleHandle));
+
+        // MODULEINFO info;
+        // ZeroMemory(&info, sizeof(info));
+        // if (!GetModuleInformation(gameHandle, moduleHandle, &info, sizeof(MODULEINFO)))
+        // {
+        //     DEBUG_PRINT("Error: Failed to get module information. LastError: %lu\n", GetLastError());
+        //     return false;
+        // }
+        // DEBUG_PRINT("d3d11.dll module size: %lu\n", info.SizeOfImage);
+
+        const auto searchStart = reinterpret_cast<uintptr_t>(moduleHandle) + 0x100000;
+        // const auto searchLength = static_cast<size_t>(info.SizeOfImage - 0x10000);
+        constexpr auto searchLength = static_cast<size_t>(0x200000);
+        auto functionAddress = reinterpret_cast<LPVOID>(IgroWidgets::FindPattern(searchStart, searchLength,
+            reinterpret_cast<const uint8_t*>("\x48\x89\x5C\x24\x08\x48\x89\x74\x24\x10\x57\x48\x83\xEC\x00\x41\x8B\xF0\x48\x8B\xDA\x48\x8D\xB9\x00\x00\x00\xFF\x48\x8B\xCF\xE8\x00\x00\x00\x00\x84\xC0\x74\x00\x48\x85\xDB\x74\x00\x8B\x8B\x00\x00\x00\x00\x8B\x93"),
+            "xxxxxxxxxxxxxx?xxxxxxxxx???xxxxx????xxx?xxxx?xx????xx"));
+        if (!functionAddress)
+        {
+            DEBUG_PRINT("Couldn't find DrawIndexedInstancedIndirect with Windows 11 pattern, trying with Windows 10...\n");
+            functionAddress = reinterpret_cast<LPVOID>(IgroWidgets::FindPattern(searchStart, searchLength,
+                reinterpret_cast<const uint8_t*>("\x48\x83\xEC\x00\x4C\x8B\xD1\x48\x85\xD2\x74\x00\x8B\x82"),
+                "xxx?xxxxxxx?xx"));
+        }
+
+        DrawIndexedInstancedIndirectAddress = functionAddress;
+        if (!DrawIndexedInstancedIndirectAddress)
+        {
+            DEBUG_PRINT("Error: Couldn't find DrawIndexedInstancedIndirect function!\n");
+            return false;
+        }
+        DEBUG_PRINT("Found DrawIndexedInstancedIndirect function at: %p\n", DrawIndexedInstancedIndirectAddress);
+
+        mhStatus = MH_CreateHook(DrawIndexedInstancedIndirectAddress, DetourDrawIndexedInstancedIndirect, reinterpret_cast<LPVOID*>(&OriginalDrawIndexedInstancedIndirect));
+        if (mhStatus != MH_OK)
+        {
+            DEBUG_PRINT("Error: Failed MH_CreateHook for DrawIndexedInstancedIndirect! Status: %d\n", mhStatus);
+            return false;
+        }
+
+        mhStatus = MH_EnableHook(DrawIndexedInstancedIndirectAddress);
+        if (mhStatus != MH_OK)
+        {
+            DEBUG_PRINT("Error: Failed MH_EnableHook for DrawIndexedInstancedIndirect! Status: %d\n", mhStatus);
+            return false;
+        }
+
+        DEBUG_PRINT("DrawIndexedInstancedIndirect hook enabled\n");
+        return true;
     }
 
     void Unload()
@@ -292,7 +275,7 @@ namespace Hook
         static auto printOnce = true;
         if (printOnce)
         {
-            printf("DetourDrawIndexedInstancedIndirect was called, confirmation that the right function was hooked\n");
+            DEBUG_PRINT("DetourDrawIndexedInstancedIndirect was called, confirmation that the right function was hooked\n");
             printOnce = false;
         }
 #endif
