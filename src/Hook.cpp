@@ -93,7 +93,8 @@ namespace Hook
 #endif
                 }
                 const auto searchStart = reinterpret_cast<uintptr_t>(moduleHandle) + 0x100000;
-                auto functionAddress = reinterpret_cast<LPVOID>(IgroWidgets::FindPattern(searchStart, info.SizeOfImage,
+                const auto searchLength = static_cast<size_t>(info.SizeOfImage - 0x1000);
+                auto functionAddress = reinterpret_cast<LPVOID>(IgroWidgets::FindPattern(searchStart, searchLength,
                     reinterpret_cast<const uint8_t*>("\x48\x89\x5C\x24\x08\x48\x89\x74\x24\x10\x57\x48\x83\xEC\x00\x41\x8B\xF0\x48\x8B\xDA\x48\x8D\xB9\x00\x00\x00\xFF\x48\x8B\xCF\xE8\x00\x00\x00\x00\x84\xC0\x74\x00\x48\x85\xDB\x74\x00\x8B\x8B\x00\x00\x00\x00\x8B\x93"),
                 "xxxxxxxxxxxxxx?xxxxxxxxx???xxxxx????xxx?xxxx?xx????xx"));
                 if (!functionAddress)
@@ -101,7 +102,7 @@ namespace Hook
 #ifdef _DEBUG
                     printf("Info: Couldn't find DrawIndexedInstancedIndirect with Windows 11 pattern, trying with Windows 10...\n");
 #endif
-                    functionAddress = reinterpret_cast<LPVOID>(IgroWidgets::FindPattern(searchStart, info.SizeOfImage,
+                    functionAddress = reinterpret_cast<LPVOID>(IgroWidgets::FindPattern(searchStart, searchLength,
                         reinterpret_cast<const uint8_t*>("\x48\x83\xEC\x00\x4C\x8B\xD1\x48\x85\xD2\x74\x00\x8B\x82"),
                         "xxx?xxxxxxx?xx"));
                 }
