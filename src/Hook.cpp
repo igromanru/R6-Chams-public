@@ -327,7 +327,8 @@ namespace Hook
 
         if (Models::Body1.IsModel(Stride, compVscWidth, compPscWidth, originalSRVs)
             || Models::Body2.IsModel(Stride, compVscWidth, compPscWidth, originalSRVs)
-            || Models::Skin.IsModel(Stride, compVscWidth, compPscWidth, originalSRVs)
+            || Models::Skin1.IsModel(Stride, compVscWidth, compPscWidth, originalSRVs)
+            || Models::Skin2.IsModel(Stride, compVscWidth, compPscWidth, originalSRVs)
             )
         {
             if (DrawChams(pContext, pBufferForArgs, AlignedByteOffsetForArgs, originalSRVs, redSRV, greenSRV))

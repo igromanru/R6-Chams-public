@@ -97,7 +97,8 @@ namespace Models
         }
     };
 
-    inline Model Skin(8, 62, 4, 77, 2);
+    inline Model Skin1(8, 62, 4, 77, 2);
+    inline Model Skin2(8, 62, 4, 83, 2);
     inline Model Body1(8, 62, 12, 83);
     inline Model Body2(8, 62, 14, 83);
 
