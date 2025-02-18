@@ -5,12 +5,12 @@
 2. Open Ubisoft Connect->Library->"..."->Properties
 3. Under "Add launch arguments" add `/Belaunch -be` and press **Save** 
 4. Start tha game normally (NOT the Vulkan version)
-5. Use any injector to inject **R6-Chams-public.dll** into the process `RainbowSix.exe`
+5. Use any injector to inject **R6-Chams-public.dll** into the process `RainbowSix_DX11.exe`
 
-The *Debug* build should definitly be only used without BE and it will provide useful infomation if something doesn't work.
+The *Debug* build should definitely be only used without BE and it will provide useful information if something doesn't work.
 
 ## Disclaimer
-This source code is intended for educational purposes only, to demostrate how Chameleon Models with a "visual check" can be achieved with a more or less clean code.  
+This source code is intended for educational purposes only, to demonstration how Chameleon Models with a "visual check" can be achieved with a more or less clean code.  
 I don't use this code while AntiCheat is running and can't guarantee that your account will not be penalized if you use it.    
 Use it at your own risk!  
 

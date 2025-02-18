@@ -56,9 +56,10 @@ namespace Models
         int PscWidth;
         int SrvFormat;
         int SrvIndex;
+        bool SrvFormatNotEqual;
 
-        Model(int stride, int vscWidth, int pscWidth, int psSrvFormat = -1, int srvIndex = -1)
-            : Stride(stride), VscWidth(vscWidth), PscWidth(pscWidth), SrvFormat(psSrvFormat), SrvIndex(srvIndex)
+        Model(int stride, int vscWidth, int pscWidth, int psSrvFormat = -1, int srvIndex = -1, bool srvFormatNotEqual = false)
+            : Stride(stride), VscWidth(vscWidth), PscWidth(pscWidth), SrvFormat(psSrvFormat), SrvIndex(srvIndex), SrvFormatNotEqual(srvFormatNotEqual)
         {
         }
 
@@ -71,11 +72,12 @@ namespace Models
                 {
                     if (SrvIndex < 0)
                     {
-                        result = false;
+                        result = !SrvFormatNotEqual;
                         for (auto i = 0; i < D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT; i++)
                         {
                             if (!SRVs[i])
                             {
+                                result = SrvFormatNotEqual;
                                 break;
                             }
 
@@ -88,7 +90,8 @@ namespace Models
                     }
                     else
                     {
-                        result = SrvIndex < D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT && MatchSRVFormat(SRVs[SrvIndex], SrvFormat);
+                        result = SrvIndex < D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT
+                            && MatchSRVFormat(SRVs[SrvIndex], SrvFormat) != SrvFormatNotEqual;
                     }
                 }
             }
@@ -97,10 +100,10 @@ namespace Models
         }
     };
 
-    inline Model Skin1(8, 62, 4, 77, 2);
-    inline Model Skin2(8, 62, 4, 83, 2);
-    inline Model Body1(8, 62, 12, 83);
-    inline Model Body2(8, 62, 14, 83);
+    inline Model Skin1(8, 75, 4, 83, 2);
+    inline Model Skin2(8, 75, 4, 77, 2);
+    inline Model Body1(8, 75, 12, 39, 1,true);
+    inline Model Body2(8, 75, 14, 39, 0,true);
 
     inline Model DroneWorldOverlay(8, 49, 3);
     inline Model WorldOverlay1(8, 49, 4);
